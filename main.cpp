@@ -27,6 +27,8 @@
 
 #include "modules.h"
 
+#include "ros/ros.h"
+
 using namespace std;
 
 
