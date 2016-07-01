@@ -20,7 +20,7 @@ shared_ptr<ParameterLink<string>> Global::modePL = Parameters::register_paramete
 shared_ptr<ParameterLink<int>> Global::maxLineLengthPL = Parameters::register_parameter("PARAMETER_FILES-maxLineLength", 180, "maximum line length");
 shared_ptr<ParameterLink<int>> Global::commentIndentPL = Parameters::register_parameter("PARAMETER_FILES-commentIndent", 45, "minimum space before comments");
 
-shared_ptr<ParameterLink<string>> Global::visualizePopulationFilePL = Parameters::register_parameter("GLOBAL_TEST_MODE-visualizePopulationFile", (string) "genome_1000.csv", "in test mode, this population will be used to generate visualization");
+shared_ptr<ParameterLink<string>> Global::RErunPopulationFilePL = Parameters::register_parameter("ROS_EVOLVE_GLOBAL-runPopulationFile", (string) "genome_1000.csv", "in run-genome mode, this will be loaded and run.");
 
 shared_ptr<ParameterLink<string>> Global::outputDirectoryPL = Parameters::register_parameter("GLOBAL-outputDirectory", (string) "./", "where files will be written");
 

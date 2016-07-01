@@ -42,16 +42,8 @@ int main(int argc, char * argv[]) {
   ////////////////////////////////////
   // ROS Setup
   ////////////////////////////////////
-  cout << "Here's what I'm seeing on the cmd line: " << endl;
-  cout << "argc = " << argc << endl;
-   for(int i = 0; i < argc; i++)
-      cout << "argv[" << i << "] = " << argv[i] << endl;
   // Initialize as a ROS Node
   ros::init(argc, argv, "mabe_ros");
-  cout << argc << " After" << endl;
-  cout << "argc = " << argc << endl;
-   for(int i = 0; i < argc; i++)
-      cout << "argv[" << i << "] = " << argv[i] << endl;
   ////////////////////////////////////
 
   configureDefaultsAndDocumentation();
@@ -147,7 +139,7 @@ int main(int argc, char * argv[]) {
     exit(1);
   }
 
-  if (Global::modePL->lookup() == "run") {
+  if (Global::modePL->lookup() == "evolve") {
     bool finished = false;  // when the archivist says we are done, we can stop!
 
     while (!finished) {
@@ -164,45 +156,26 @@ int main(int argc, char * argv[]) {
     groups[defaultGroup]->archive(1);  // flush any data that has not been output yet
 
   }
-  else if (Global::modePL->lookup() == "test") {
-
+  else if (Global::modePL->lookup() == "run-genome") {
+    ///////////
+    // Load a genome and run it forever.
     vector<shared_ptr<AbstractGenome>> mg;
-    groups[defaultGroup]->population[0]->genome->loadGenomeFile(Global::visualizePopulationFilePL->lookup(), mg);
-    cout << "file loaded";
-    int num_genomes = (int)mg.size();
-    int counter = 0;
-    while ((int)mg.size() < Global::popSizePL->lookup()) {
-      cout << ".";
-      mg.push_back(mg[counter]);
-      counter++;
-      if (counter >= num_genomes) {
-        counter = 0;
-      }
-    }
-    vector<shared_ptr<Organism>> testPopulation;
+    groups[defaultGroup]->population[0]->genome->loadGenomeFile(Global::RErunPopulationFilePL->lookup(), mg);
+    cout << "Loaded: " << Global::RErunPopulationFilePL->lookup() << " to run." << endl;
+    vector<shared_ptr<Organism>> runPopulation;
     for (auto g : mg) {
       auto newOrg = make_shared<Organism>(groups[defaultGroup]->population[0], g);
-      //newOrg->brain->setRecordActivity(true);
-      //newOrg->brain->setRecordFileName("wireBrain.run");
-      testPopulation.push_back(newOrg);  // add a new org to population using progenitors template and a new random genome
+      runPopulation.push_back(newOrg);
     }
     cout << "\npopulation created." << endl;
+    cout << "Running " << runPopulation.size() << " organisms." << endl;
 
-    //////////////////////////////////////////////
-    // rebuild testGroup with one particular org.
-    testPopulation.clear();
-    auto newOrg = make_shared<Organism>(groups[defaultGroup]->population[0], mg[0]);
-    testPopulation.push_back(newOrg);
-    //////////////////////////////////////////////
-
-    shared_ptr<Group> testGroup = make_shared<Group>(testPopulation, groups[defaultGroup]->optimizer, groups[defaultGroup]->archivist);
+    // Rebuild test group with one particular org
+    shared_ptr<Group> testGroup = make_shared<Group>(runPopulation, groups[defaultGroup]->optimizer, groups[defaultGroup]->archivist);
     cout << "\ngroup created." << endl;
-    world->runWorld(testGroup, false, true, false);
-
-    for (auto o : testGroup->population) {
-      cout << o->score << " " << o->genome->dataMap.Get("ID") << endl;
-    }
-
+    cout << "Running organisms now." << endl;
+    world->evaluate(testGroup, AbstractWorld::groupEvaluationPL->lookup(), true, false, AbstractWorld::debugPL->lookup());
+    testGroup->archive();
   }
   else {
     cout << "\n\nERROR: Unrecognized mode set in configuration!\n  \"" << Global::modePL->lookup() << "\" is not defined.\n\nExiting.\n" << endl;
