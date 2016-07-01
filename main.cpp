@@ -156,7 +156,7 @@ int main(int argc, char * argv[]) {
     groups[defaultGroup]->archive(1);  // flush any data that has not been output yet
 
   }
-  else if (Global::modePL->lookup() == "run-genome") {
+  else if (Global::modePL->lookup() == "run") {
     ///////////
     // Load a genome and run it forever.
     vector<shared_ptr<AbstractGenome>> mg;

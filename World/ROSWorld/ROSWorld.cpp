@@ -7,7 +7,7 @@
 
 #include "ROSWorld.h"
 
-shared_ptr<ParameterLink<string>> ROSWorld::ROSWorldModePL = Parameters::register_parameter("WORLD_ROS-ROSWorldMode", (string) "evolve-grid", "Blah");
+shared_ptr<ParameterLink<string>> ROSWorld::environmentModePL = Parameters::register_parameter("WORLD_ROS-environmentMode", (string) "grid", "[grid, simulation]");
 shared_ptr<ParameterLink<int>> ROSWorld::robotLifespanPL = Parameters::register_parameter("WORLD_ROS-robotLifespan", 1000, "Blah");
 shared_ptr<ParameterLink<int>> ROSWorld::runRatePL = Parameters::register_parameter("WORLD_ROS-runRate", 5, "Blah");
 shared_ptr<ParameterLink<double>> ROSWorld::obstacleThresholdPL = Parameters::register_parameter("WORLD_ROS-obstacleThreshold", 1.0, "Blah");
@@ -17,7 +17,8 @@ shared_ptr<ParameterLink<string>> ROSWorld::gridFilePathPL = Parameters::registe
 
 
 ROSWorld::ROSWorld(shared_ptr<ParametersTable> _PT) : AbstractWorld(_PT) {
-  ROSWorldMode = (PT == nullptr) ? ROSWorldModePL->lookup() : PT->lookupString("WORLD_ROS-ROSWorldMode");
+  environmentMode = (PT == nullptr) ? environmentModePL->lookup() : PT->lookupString("WORLD_ROS-environmentMode");
+  globalMode = (PT == nullptr) ? Global::modePL->lookup() : PT->lookupString("GLOBAL-mode");
   robotLifespan = (PT == nullptr) ? robotLifespanPL->lookup() : PT->lookupInt("WORLD_ROS-robotLifespan");
   runRate = (PT == nullptr) ? runRatePL->lookup() : PT->lookupInt("WORLD_ROS-runRate");
   obstacleThreshold = (PT == nullptr) ? obstacleThresholdPL->lookup() : PT->lookupDouble("WORLD_ROS-obstacleThreshold");
@@ -27,6 +28,9 @@ ROSWorld::ROSWorld(shared_ptr<ParametersTable> _PT) : AbstractWorld(_PT) {
   inputNodesCount = numRangeSlices;
   aveFileColumns.clear();
 
+  cout << "ROSWORLD -- globalMode: " << globalMode << endl;
+  cout << "ROSWORLD -- evaluateMode: " << environmentMode << endl;
+
   // Setup publishers
   cmdVelPub = nodeHandle.advertise<geometry_msgs::Twist>("cmd_vel", 1000);
 
@@ -34,7 +38,8 @@ ROSWorld::ROSWorld(shared_ptr<ParametersTable> _PT) : AbstractWorld(_PT) {
   laserSub = nodeHandle.subscribe("base_scan", 1000, &ROSWorld::laserCallback, this);
   odomSub = nodeHandle.subscribe("odom", 1000, &ROSWorld::odomCallback, this);
 
-  loadGrid();
+  if (environmentMode == "grid")
+    loadGrid();
   // for (int i = 0; i < (int) worldGrid.size(); i++) {
   //   for (int k = 0; k < (int) worldGrid[i].size(); k++) {
   //     cout << worldGrid[i][k];
@@ -106,10 +111,11 @@ vector<float> ROSWorld::filterLaser(const sensor_msgs::LaserScan::ConstPtr& lase
 }
 
 void ROSWorld::runWorldSolo(shared_ptr<Organism> org, bool analyze, bool visualize, bool debug) {
-  //cout << "Run world solo for: " << org->ID << endl;
   ros::Rate rate(runRate);
-  if (ROSWorldMode == "run") {
-    /* RUN MODE DESCRIPTION: This mode just runs the organism passed to runWorldSolo until ROS dies. */
+  if (globalMode == "run" && environmentMode == "simulation") {
+    /* RUN MODE DESCRIPTION: This mode just runs the organism passed to runWorldSolo until ROS dies.
+      RUN in SIMULATOR
+    */
     // Each time step consists of the following steps:
     //  1) SENSE, 2) THINK (brain update), 3) ACTUATE, 4) WORLD UPDATE
     // Wait for a laser scan message
@@ -163,7 +169,7 @@ void ROSWorld::runWorldSolo(shared_ptr<Organism> org, bool analyze, bool visuali
       ros::spinOnce();
       rate.sleep();
     }
-  } else if (ROSWorldMode == "evolve") {
+  } else if (globalMode == "evolve" && environmentMode == "simulation") {
     /* TODO (amlalejini): This mode currently does nothing.
           EVOLVE MODE DESCRPTION: This mode will be used to evolve brains in the stage simulation. It will call fitness tracking service for
            fitness information.
@@ -185,7 +191,7 @@ void ROSWorld::runWorldSolo(shared_ptr<Organism> org, bool analyze, bool visuali
       rate.sleep();
       robotTime += 1;
     }
-  } else if (ROSWorldMode == "evolve-grid") {
+  } else if (globalMode == "evolve" && environmentMode == "grid") {
     /* EVOLVE-GRID MODE DESCRIPTION: This mode will evolve brains to navigate to a target in a grid world.
         Fitness is the A* distance to the objective.
     */
@@ -276,8 +282,11 @@ void ROSWorld::runWorldSolo(shared_ptr<Organism> org, bool analyze, bool visuali
     }
     // What's my fitness, again? Simple Diagnal distance to goal (susceptible to deception, but whatever, this is for testing.)
     org->score = abs(maxDist - getGridDiagDist(x, y, gridTargetLocation[0], gridTargetLocation[1]));
+  } else if (globalMode == "run" && environmentMode == "grid") {
+    cout << "RUN mode in GRID environment is not implemented." << endl;
+    exit(-1);
   } else {
-    cout << "Unable to recognize ROSWorldMode value: " << ROSWorldMode << endl;
+    cout << "Unable to resolve ROSWORLD::environmentMode + GLOBAL::mode: \n\tROSWORLD::environmentMode: " << environmentMode << "; GLOBAL::mode: " << globalMode << endl;
     exit(-1);
   }
 }

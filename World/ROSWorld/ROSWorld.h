@@ -20,6 +20,7 @@
 #include "geometry_msgs/Twist.h"
 #include "nav_msgs/Odometry.h"
 
+#include "../../Global.h"
 #include "../AbstractWorld.h"
 
 using namespace std;
@@ -36,7 +37,8 @@ private:
   float filterThreshold;      // Proportion of scans in a window that need to report as seeing an obstacle before setting a filtered bit.
   sensor_msgs::LaserScan::ConstPtr currentLaser;
   nav_msgs::Odometry::ConstPtr currentOdom;
-  string ROSWorldMode;
+  string environmentMode;        // Grid or simulator?
+  string globalMode;
   ros::NodeHandle nodeHandle;
   ros::Publisher cmdVelPub;
   ros::Subscriber odomSub;
@@ -67,7 +69,7 @@ private:
 
 public:
   // P-server parameters
-  static shared_ptr<ParameterLink<string>> ROSWorldModePL;
+  static shared_ptr<ParameterLink<string>> environmentModePL;
   static shared_ptr<ParameterLink<int>> robotLifespanPL;
   static shared_ptr<ParameterLink<int>> runRatePL;
   static shared_ptr<ParameterLink<double>> obstacleThresholdPL;
