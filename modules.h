@@ -13,10 +13,8 @@
 #ifndef __AutoBuild__Modules__
 #define __AutoBuild__Modules__
 #include "World/BerryWorld/BerryWorld.h"
-#include "World/NumeralClassifierWorld/NumeralClassifierWorld.h"
 #include "World/TestWorld/TestWorld.h"
-#include "World/IPDWorld/IPDWorld.h"
-#include "World/SOFWorld/SOFWorld.h"
+#include "World/ROSWorld/ROSWorld.h"
 #include "Genome/CircularGenome/CircularGenome.h"
 #include "Genome/MultiGenome/MultiGenome.h"
 #include "Brain/MarkovBrain/MarkovBrain.h"
@@ -41,20 +39,12 @@ shared_ptr<AbstractWorld> makeWorld(shared_ptr<ParametersTable> PT = Parameters:
     newWorld = make_shared<BerryWorld>(PT);
     found = true;
     }
-  if (worldType == "NumeralClassifier") {
-    newWorld = make_shared<NumeralClassifierWorld>(PT);
-    found = true;
-    }
   if (worldType == "Test") {
     newWorld = make_shared<TestWorld>(PT);
     found = true;
     }
-  if (worldType == "IPD") {
-    newWorld = make_shared<IPDWorld>(PT);
-    found = true;
-    }
-  if (worldType == "SOF") {
-    newWorld = make_shared<SOFWorld>(PT);
+  if (worldType == "ROS") {
+    newWorld = make_shared<ROSWorld>(PT);
     found = true;
     }
   if (!found){
@@ -181,7 +171,7 @@ void configureDefaultsAndDocumentation(){
   Parameters::root->setDocumentation("OPTIMIZER-optimizer", "optimizer to be used, [GA, Tournament, Tournament2]");
 
   Parameters::root->setParameter("WORLD-worldType", (string)"Berry");
-  Parameters::root->setDocumentation("WORLD-worldType","world to be used, [Berry, NumeralClassifier, Test, IPD, SOF]");
+  Parameters::root->setDocumentation("WORLD-worldType","world to be used, [Berry, Test, ROS]");
 }
 
 

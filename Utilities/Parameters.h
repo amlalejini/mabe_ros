@@ -842,17 +842,16 @@ public:
 	static shared_ptr<ParameterLink<double>> getDoubleLink(const string& name, shared_ptr<ParametersTable> table);
 
 	static void parseFullParameterName(const string& fullName, string& nameSpace, string& category, string& parameterName);
-	static void readCommandLine(int argc, const char** argv, unordered_map<string, string>& comand_line_list, vector<string>& fileList) {
+	static void readCommandLine(int argc, char** argv, unordered_map<string, string>& comand_line_list, vector<string>& fileList) {
 		bool temp = false;
 		readCommandLine(argc, argv, comand_line_list, fileList, temp);
 	}
-	static void readCommandLine(int argc, const char** argv, unordered_map<string, string>& comand_line_list, vector<string>& fileList, bool& saveFiles);
+	static void readCommandLine(int argc, char** argv, unordered_map<string, string>& comand_line_list, vector<string>& fileList, bool& saveFiles);
 	static unordered_map<string, string> readParametersFile(string fileName);
-	static bool initializeParameters(int argc, const char * argv[]);
+	static bool initializeParameters(int argc, char * argv[]);
 	static void saveSettingsFile(const string& nameSpace, stringstream& FILE, vector<string> categoryList, int _maxLineLength, int _commentIndent, bool alsoChildren = false, int nameSpaceLevel = 0);
 	static void saveSettingsFiles(int _maxLineLength, int _commentIndent, vector<string> nameSpaceList = { "*" }, vector<pair<string, vector<string>>> categoryLists = { {"settings.cfg", {""}}});
 	static void printParameterWithWraparound(stringstream& FILE, string _currentIndent, string _parameter, int _maxLineLength, int _commentIndent);
 };
 
 #endif // __MABE__Parameters__
-

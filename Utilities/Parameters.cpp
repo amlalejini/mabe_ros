@@ -98,7 +98,7 @@ void Parameters::parseFullParameterName(const string& fullName, string& nameSpac
 	}
 }
 
-void Parameters::readCommandLine(int argc, const char** argv, unordered_map<string, string>& comand_line_list, vector<string>& fileList, bool& saveFiles) {
+void Parameters::readCommandLine(int argc, char** argv, unordered_map<string, string>& comand_line_list, vector<string>& fileList, bool& saveFiles) {
 	int argCount = 1;
 	while (argCount < argc) {
 		if (argv[argCount][0] == '-' && argv[argCount][1] == 'f') {  // denotes that file names will follow
@@ -354,7 +354,7 @@ unordered_map<string, string> Parameters::readParametersFile(string fileName) {
 	return config_file_list;
 }
 
-bool Parameters::initializeParameters(int argc, const char * argv[]) {
+bool Parameters::initializeParameters(int argc, char * argv[]) {
 
 	if (root == nullptr) {
 		root = ParametersTable::makeTable();
